@@ -3,6 +3,9 @@ uuid = "2c75c34f-bb04-4a69-9a35-bf0e3f64ecf6"
 authors = ["kimauth <auth@chalmers.se> and contributors"]
 version = "0.1.0"
 
+[deps]
+Ferrite = "c061ca5d-56c9-439f-9c0e-210fe06d3992"
+
 [compat]
 julia = "1"
 
