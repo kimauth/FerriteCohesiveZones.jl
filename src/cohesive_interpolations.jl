@@ -21,7 +21,7 @@ function Ferrite.value(ip::JumpInterpolation, i::Int, ξ::Vec{dim_base}) where d
     @assert Ferrite.getdim(ip_base) == dim_base
     0 < i <= getnbasefunctions(ip) || throw(ArgumentError("no shape function $i for interpolation $ip"))
 
-    vertex_dofs = nvertices(ip_base)*nvertexdofs(ip_base)
+    vertex_dofs = nvertexdofs(ip_base)
     face_dofs = length(Ferrite.faces(ip_base))*nfacedofs(ip_base)
     cell_dofs = ncelldofs(ip_base)
     if i <= 2vertex_dofs
@@ -57,7 +57,7 @@ function Ferrite.value(ip::MidPlaneInterpolation, i::Int, ξ::Vec{dim_base}) whe
     @assert Ferrite.getdim(ip_base) == dim_base
     0 < i <= getnbasefunctions(ip) || throw(ArgumentError("no shape function $i for interpolation $ip"))
 
-    vertex_dofs = nvertices(ip_base)*nvertexdofs(ip_base)
+    vertex_dofs = nvertexdofs(ip_base)
     face_dofs = length(Ferrite.faces(ip_base))*nfacedofs(ip_base)
     cell_dofs = ncelldofs(ip_base)
     if i <= 2vertex_dofs
