@@ -1,9 +1,11 @@
 abstract type SurfaceInterpolation{dim,shape,order,ip} <: Interpolation{dim,shape,order} end
 
-Ferrite.getnbasefunctions(ip::SurfaceInterpolation) = 2Ferrite.getnbasefunctions(ip.ip_base)
-Ferrite.vertexdof_indices(ip::SurfaceInterpolation) = Ferrite.vertexdof_indices(ip.ip_base)
-Ferrite.edgedof_interior_indices(ip::SurfaceInterpolation) = Ferrite.facedof_interior_indices(ip.ip_base)
-Ferrite.facedof_interior_indices(ip::SurfaceInterpolation) = Ferrite.celldof_interior_indices(ip.ip_base)
+# Ferrite.getnbasefunctions(ip::SurfaceInterpolation) = 2Ferrite.getnbasefunctions(ip.ip_base)
+# Ferrite.vertexdof_indices(ip::SurfaceInterpolation) = Ferrite.vertexdof_indices(ip.ip_base)
+# Ferrite.edgedof_interior_indices(ip::SurfaceInterpolation) = Ferrite.facedof_interior_indices(ip.ip_base)
+# Ferrite.facedof_interior_indices(ip::SurfaceInterpolation) = Ferrite.celldof_interior_indices(ip.ip_base)
+Ferrite.getnbasefunctions(ip::SurfaceInterpolation{2, RefCube, 1, Lagrange{1, RefCube, 1}}) = 4
+Ferrite.vertexdof_indices(ip::SurfaceInterpolation{2, RefCube, 1, Lagrange{1, RefCube, 1}}) = ((1,),(2,),(3,),(4,))
 
 struct JumpInterpolation{dim,shape,order,ip} <: SurfaceInterpolation{dim,shape,order,ip}
     ip_base::ip
