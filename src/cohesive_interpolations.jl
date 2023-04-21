@@ -1,17 +1,9 @@
 abstract type SurfaceInterpolation{dim,shape,order,ip} <: Interpolation{dim,shape,order} end
 
-Ferrite.getnbasefunctions(ip::SurfaceInterpolation) = Ferrite.getnbasefunctions(ip.ip_base)*2
-Ferrite.nvertexdofs(ip::SurfaceInterpolation) = Ferrite.nvertexdofs(ip.ip_base)
-Ferrite.nedgedofs(ip::SurfaceInterpolation) = Ferrite.nfacedofs(ip.ip_base)
-Ferrite.nfacedofs(ip::SurfaceInterpolation) = Ferrite.ncelldofs(ip.ip_base) 
-Ferrite.ncelldofs(ip::SurfaceInterpolation) = 0 # cohesive elements never have dofs inside the cell
-
-# stuff for handling higher order elements correctly
-nvertices(::Interpolation{1,RefCube}) = 2
-nvertices(::Interpolation{2,RefCube}) = 4
-nvertices(::Interpolation{2,RefTetrahedron}) = 3
-nvertices(::Interpolation{3,RefCube}) = 8
-nvertices(::Interpolation{3,RefTetrahedron}) = 4
+Ferrite.getnbasefunctions(ip::SurfaceInterpolation) = 2Ferrite.getnbasefunctions(ip.base)
+Ferrite.vertexdof_indices(ip::SurfaceInterpolation) = Ferrite.vertexdof_indices(ip.ip_base)
+Ferrite.edgedof_interior_indices(ip::SurfaceInterpolation) = Ferrite.facedof_interior_indices(ip.ip_base)
+Ferrite.facedof_interior_indices(ip::SurfaceInterpolation) = Ferrite.celldof_interior_indices(ip.ip_base)
 
 struct JumpInterpolation{dim,shape,order,ip} <: SurfaceInterpolation{dim,shape,order,ip}
     ip_base::ip
