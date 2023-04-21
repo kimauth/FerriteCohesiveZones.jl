@@ -1,6 +1,6 @@
 abstract type SurfaceInterpolation{dim,shape,order,ip} <: Interpolation{dim,shape,order} end
 
-Ferrite.getnbasefunctions(ip::SurfaceInterpolation) = 2Ferrite.getnbasefunctions(ip.base)
+Ferrite.getnbasefunctions(ip::SurfaceInterpolation) = 2Ferrite.getnbasefunctions(ip.ip_base)
 Ferrite.vertexdof_indices(ip::SurfaceInterpolation) = Ferrite.vertexdof_indices(ip.ip_base)
 Ferrite.edgedof_interior_indices(ip::SurfaceInterpolation) = Ferrite.facedof_interior_indices(ip.ip_base)
 Ferrite.facedof_interior_indices(ip::SurfaceInterpolation) = Ferrite.celldof_interior_indices(ip.ip_base)
@@ -8,6 +8,9 @@ Ferrite.facedof_interior_indices(ip::SurfaceInterpolation) = Ferrite.celldof_int
 struct JumpInterpolation{dim,shape,order,ip} <: SurfaceInterpolation{dim,shape,order,ip}
     ip_base::ip
 end
+
+nvertices(ip::Interpolation) = length(Ferrite.vertexdof_indices(ip))
+nvertexdofs(ip::Interpolation) = sum(length.(Ferrite.vertexdof_indices(ip)); init=0)
 
 JumpInterpolation(ip::Interpolation{dim,shape,order}) where {dim,shape,order} = JumpInterpolation{dim+1,shape,order,typeof(ip)}(ip)
 # no need to handle edge dofs, as underlying interpolation is <= 2D
