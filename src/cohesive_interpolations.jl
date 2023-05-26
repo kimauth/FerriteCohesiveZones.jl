@@ -1,8 +1,8 @@
 abstract type SurfaceInterpolation{dim,shape,order,ip} <: Interpolation{dim,shape,order} end
 
 Ferrite.getnbasefunctions(ip::SurfaceInterpolation{2, RefCube, order, Lagrange{1, RefCube, order}}) where {order} = 2*getnbasefunctions(ip.ip_base)
-Ferrite.vertexdof_indices(ip::SurfaceInterpolation{2, RefCube, order, Lagrange{1, RefCube, order}}) where {order} = ((1,),(2,),(order-1+3,),(order-1+4,)) # TODO we should be able to do it via calling `vertexdof_indices` of `ip_base` + arithmetic
-Ferrite.facedof_interior_indices(ip::SurfaceInterpolation{2, RefCube, order, Lagrange{1, RefCube, order}}) where {order} = (ntuple(i->2+i,order-1), ntuple(i->(order-1+4)+i,order-1)) # TODO we should be able to do it via calling `facedof_indices` of `ip_base` + arithmetic 
+Ferrite.vertexdof_indices(ip::SurfaceInterpolation{2, RefCube, order, Lagrange{1, RefCube, order}}) where {order} = ((1,),(2,),(order-1+3,),(order-1+4,))
+Ferrite.facedof_interior_indices(ip::SurfaceInterpolation{2, RefCube, order, Lagrange{1, RefCube, order}}) where {order} = (ntuple(i->2+i,order-1), ntuple(i->(order-1+4)+i,order-1))
 
 struct JumpInterpolation{dim,shape,order,ip} <: SurfaceInterpolation{dim,shape,order,ip}
     ip_base::ip
@@ -10,7 +10,7 @@ end
 
 nvertices(ip::Interpolation) = length(Ferrite.vertexdof_indices(ip))
 nvertexdofs(ip::Interpolation) = sum(length.(Ferrite.vertexdof_indices(ip)); init=0)
-nfacedofs(ip::Interpolation) = sum(length.(Ferrite.facedof_indices(ip)); init=0)
+nfacedofs(ip::Interpolation) = sum(length.(Ferrite.facedof_interior_indices(ip)); init=0)
 ncelldofs(ip::Interpolation) = length(Ferrite.celldof_interior_indices(ip))
 
 JumpInterpolation(ip::Interpolation{dim,shape,order}) where {dim,shape,order} = JumpInterpolation{dim+1,shape,order,typeof(ip)}(ip)
@@ -20,11 +20,27 @@ function Ferrite.value(ip::JumpInterpolation, i::Int, ξ::Vec{dim_base}) where d
     @assert Ferrite.getdim(ip_base) == dim_base
     0 < i <= getnbasefunctions(ip) || throw(ArgumentError("no shape function $i for interpolation $ip"))
 
-    ndofs_base = getnbasefunctions(ip_base)
-    if i <= ndofs_base
-        return -Ferrite.value(ip_base, i, ξ)
-    else 
-        return Ferrite.value(ip_base, i-ndofs_base, ξ)
+    vertex_dofs = nvertices(ip_base)*nvertexdofs(ip_base)
+    face_dofs = length(Ferrite.faces(ip_base))*nfacedofs(ip_base)
+    cell_dofs = ncelldofs(ip_base)
+    if i <= 2vertex_dofs
+        if i <= vertex_dofs
+            return -Ferrite.value(ip_base, i, ξ)
+        else
+            return Ferrite.value(ip_base, i-vertex_dofs, ξ)
+        end
+    elseif i - 2vertex_dofs <= 2face_dofs
+        if i-2vertex_dofs <= face_dofs
+            return -Ferrite.value(ip_base, i-vertex_dofs, ξ)
+        else
+            return Ferrite.value(ip_base, i-vertex_dofs-face_dofs, ξ)
+        end
+    elseif i - 2vertex_dofs - 2face_dofs <= 2cell_dofs
+        if i - 2vertex_dofs - 2face_dofs <= cell_dofs
+            return -Ferrite.value(ip_base, i-vertex_dofs - face_dofs, ξ)
+        else
+            return Ferrite.value(ip_base, i-vertex_dofs-face_dofs-cell_dofs, ξ)
+        end
     end
 end
 
@@ -42,7 +58,7 @@ function Ferrite.value(ip::MidPlaneInterpolation, i::Int, ξ::Vec{dim_base}) whe
     ndofs_base = getnbasefunctions(ip_base)
     if i <= ndofs_base
         return 0.5Ferrite.value(ip_base, i, ξ)
-    else 
+    else
         return 0.5Ferrite.value(ip_base, i-ndofs_base, ξ)
     end
 end
